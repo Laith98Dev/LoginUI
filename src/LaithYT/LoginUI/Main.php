@@ -41,7 +41,7 @@ class Main extends PluginBase {
 					$pass = $args[0];
 					if(!$this->isRegistered($sender)){
 						if($this->checkPassword($sender, $pass)){
-							$this->Register($player);
+							$this->Register($sender);
 						}
 					}
 				} else {
