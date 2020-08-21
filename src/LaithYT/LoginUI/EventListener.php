@@ -38,7 +38,7 @@ class EventListener implements Listener {
 	public function onJoin(PlayerJoinEvent $event){
 		$player = $event->getPlayer();
 		if(!$this->plugin->isRegistered($player)){
-			$player->sendMessage(TF::GREEN . "please register type /login");
+			$player->sendMessage($this->plugin->getFromConfig("Join.Message"));
 			$this->plugin->setTimer($player);
 		}
 	}
@@ -55,6 +55,18 @@ class EventListener implements Listener {
 		$msg = $event->getMessage();
 		if(!$this->plugin->isRegistered($player)){
 			$event->setCancelled();
+		}
+	}
+	
+	public function onCommand(PlayerCommandPreprocessEvent $event){
+		$player = $event->getPlayer();
+		$command = $event->getMessage();
+		$cmd = explode(" ", $command);
+		if(!$this->plugin->isRegistered($player)){
+			if($cmd[0] !== "/login"){
+				$player->sendMessage($this->plugin->getFromConfig("Command.Preprocess"));
+				$event->setCancelled();
+			}
 		}
 	}
 	
