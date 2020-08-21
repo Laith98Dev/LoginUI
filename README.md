@@ -1,3 +1,6 @@
+# Description
+- "Simple Login Plugin with ui."
+
 # Commands
 Command | Description
 --- | ---
