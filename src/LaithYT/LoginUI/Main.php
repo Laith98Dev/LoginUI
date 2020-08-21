@@ -31,7 +31,15 @@ class Main extends PluginBase {
 	public $errors = [];
 	
 	public function onEnable(){
+		@mkdir($this->getDataFolder());
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+		if(!is_file($this->getDataFolder() . "config.yml")){
+			$this->saveResource("config.yml");
+		}
+		
+		if(!is_file($this->getDataFolder() . "Password.yml")){
+			$this->saveResource("Password.yml");
+		}
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args) : bool{
@@ -50,14 +58,26 @@ class Main extends PluginBase {
 					}
 				}
 			} else {
-				$sender->sendMessage(TF::RED . "Cannot use the command here!");
+				$sender->sendMessage(TF::RED . "Cannot use the command here!");//TODO: if player not in server
 			}
 		}
 		return true;
 	}
 	
+	public function getFromConfig(string $item){
+		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$i = $cfg->get($item);
+		if($i){
+			return $i;
+		}
+		return null;
+	}
+	
 	public function setTimer($player){
-		$this->getScheduler()->scheduleDelayedTask(new \LaithYT\LoginUI\Timer($this, $player), 450);//TODO: kick player when time ended
+		if($this->getFromConfig("timed.out")){
+			$time = $this->getFromConfig("time.kick");
+			$this->getScheduler()->scheduleDelayedTask(new \LaithYT\LoginUI\Timer($this, $player), $time);//TODO: kick player when time ended
+		}
 	}
 	
 	public function MainForm($player){
@@ -67,11 +87,33 @@ class Main extends PluginBase {
 			}
 			switch($data){
 				case 0:
+					if(!$this->haveAccount($player)){
+						$player->sendMessage(TF::RED . "you not registered, please register");
+						return true;
+					}
+					if(isset($this->errors[$player->getRawUniqueId()])){
+						unset($this->errors[$player->getRawUniqueId()]);
+					}
 					$this->LoginForm($player);
 				break;
 				
 				case 1:
+					if(isset($this->errors[$player->getRawUniqueId()])){
+						unset($this->errors[$player->getRawUniqueId()]);
+					}
 					$this->RegisterForm($player);
+				break;
+				
+				case 2:
+					if(!$this->haveAccount($player)){
+						$player->sendMessage(TF::RED . "you not registered, please register");
+						return true;
+					}
+					if(isset($this->errors[$player->getRawUniqueId()])){
+						unset($this->errors[$player->getRawUniqueId()]);
+					}
+					$this->ChangePasForm1($player);
+					
 				break;
 			}
 		});
@@ -79,6 +121,71 @@ class Main extends PluginBase {
 		$form->setTitle("LoginUI");
 		$form->addButton("Login");
 		$form->addButton("Register");
+		$form->addButton("Change Password");
+		$form->sendToPlayer($player);
+		return $form;
+	}
+	
+	public function ChangePasForm1($player){
+		$form = new CustomForm(function (Player $player, array $data = null){
+			if($data === null){
+				return true;
+			}
+			
+			if($data[0] !== null){
+				$pass = $data[0];
+				if($this->checkPassword($player, $pass)){
+					if(isset($this->errors[$player->getRawUniqueId()])){
+						unset($this->errors[$player->getRawUniqueId()]);
+					}
+					$this->ChangePasForm2($player);
+				} else {
+					$this->errors[$player->getRawUniqueId()] = TF::RED . "Invalid password!";
+					$this->ChangePasForm1($player);
+				}
+			}
+		});
+			
+		$form->setTitle("Login");
+		if(isset($this->errors[$player->getRawUniqueId()])){
+			$hold = $this->errors[$player->getRawUniqueId()];
+			$form->addInput("Current Password", $hold);
+		} else {
+			$form->addInput("Current Password");
+		}
+		$form->sendToPlayer($player);
+		return $form;
+	}
+	
+	public function ChangePasForm2($player){
+		$form = new CustomForm(function (Player $player, array $data = null){
+			if($data === null){
+				return true;
+			}
+			
+			if($data[0] !== null){
+				$pass = $data[0];
+				$c = strlen($pass);
+				if($c < 4 || $c > 10){
+					$this->errors[$player->getRawUniqueId()] = TF::RED . "password must contain 4-10";
+					$this->ChangePasForm2($player);
+					return false;
+				}
+				$cfg = new Config($this->getDataFolder() . "Password.yml", Config::YAML);
+				$cfg->set($player->getName(), $pass);
+				$cfg->save();
+				$player->addTitle(TF::YELLOW . "Sucessfully", TF::GREEN . "Changed Password!");
+				$this->Register($player);
+			}
+		});
+			
+		$form->setTitle("Login");
+		if(isset($this->errors[$player->getRawUniqueId()])){
+			$hold = $this->errors[$player->getRawUniqueId()];
+			$form->addInput("New Password", $hold);
+		} else {
+			$form->addInput("New Password");
+		}
 		$form->sendToPlayer($player);
 		return $form;
 	}
