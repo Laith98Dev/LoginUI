@@ -1,0 +1,17 @@
+#
+#  Plugin LoginUI By LaithYoutuber
+#       Discord: Laith.97#8167
+#       YT: Laith Youtuber
+#       Facebook: Laith A Al Haddad
+#
+
+# kicked player when login time ended
+timed.out: true
+
+# kick time || 20 = 1s
+time.kick: 450
+
+# Messages 
+Join.Message: "§cplease register type /login"
+Command.Preprocess: "§cplease register type /login"
+Kick.Message: "§cLogin timed out"
