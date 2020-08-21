@@ -3,7 +3,7 @@ main: LaithYT\LoginUI\Main
 api: [3.0.0]
 version: 1.0.0
 author: LaithYT
-description: Open Login UI When Player Join the server.
+description: Simple Login Plugin.
 
 commands:
   login:
