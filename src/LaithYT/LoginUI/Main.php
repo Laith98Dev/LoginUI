@@ -18,9 +18,9 @@ use pocketmine\utils\{Config, TextFormat as TF};
 
 use pocketmine\command\{CommandSender, Command};
 
-use LaithYT\LoginUI\form\jojoe77777\FormAPI;
-use LaithYT\LoginUI\form\jojoe77777\FormAPI\SimpleForm;
-use LaithYT\LoginUI\form\jojoe77777\FormAPI\CustomForm;
+use jojoe77777\FormAPI;
+use jojoe77777\FormAPI\SimpleForm;
+use jojoe77777\FormAPI\CustomForm;
 
 class Main extends PluginBase {
 	
